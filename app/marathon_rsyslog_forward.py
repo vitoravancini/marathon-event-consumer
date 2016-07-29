@@ -24,6 +24,9 @@ class EventProcessor(object):
         self.last_fetched_apps = self.get_monitored_apps()
         self.template_engine = TemplateEngine()
 
+        # Reload on first run
+        self.reload_rsyslog_config(self.last_fetched_apps)
+
 
     def attach_to_marathon(self):
         messages = SSEClient("http://" + marathon_host + ":8080/v2/events")
@@ -82,9 +85,4 @@ class EventProcessor(object):
 
 if __name__ == "__main__":
     print ("This application tested with Python3 only")
-    # temp_engine = TemplateEngine()
-    # app1 = (MarathonApp('nginx-helloworld', "172.23.70.147"))
-    # apps = [app1]
-    # temp_engine.reload_rsyslog_template(apps)
-
     EventProcessor().attach_to_marathon()

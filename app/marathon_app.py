@@ -2,7 +2,6 @@ import requests
 # Class that represents an Marathon App
 
 
-
 class MarathonApp(object):
 
     def __init__(self, appid, marathon_host):
@@ -15,13 +14,19 @@ class MarathonApp(object):
 
     def get_app_details(self):
         response = requests.get(self.uri).json()
-        if (response['app']['tasks'] ==[]):
+        if (response['app']['tasks'] == []):
             print ('No task data on Marathon for App ! ', self.appid)
         else:
             self.instances_count = response['app']['instances']
             self.labels = response['app']['labels']
 
-            app_task_dict={}
+            try:
+                self.image = response['app']['container']['docker']['image']
+            except Exception as e:
+                print ('probably not docker, setting app image to "" ')
+                self.image = ""
+
+            app_task_dict = {}
             for i in response['app']['tasks']:
                 taskid = i['id']
                 hostid = i['host']
