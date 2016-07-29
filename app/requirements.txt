@@ -1,0 +1,3 @@
+Jinja2==2.8
+sseclient==0.0.12
+Requests==2.10.0
