@@ -9,7 +9,7 @@ class TemplateEngine(object):
 
     def reload_rsyslog_template(self, apps):
         for app in apps:
-            f = open('/etc/rsyslog.d/49-logentries-{}.conf'.format(app.appid), 'w+')
+            f = open('/etc/rsyslog.d/409-logentries-{}.conf'.format(app.appid), 'w+')
             f.write(self.template.render(app=app))
             f.close()
             os.system("sudo service rsyslog restart")
