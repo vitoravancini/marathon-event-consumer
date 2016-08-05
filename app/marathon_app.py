@@ -10,6 +10,7 @@ class MarathonApp(object):
         self.uri = "http://{}:8080/v2/apps/{}".format(marathon_host, appid)
         self.average_usages = None
         self.tasks = {}
+        self.labels = {}
         self.get_app_details()
 
     def get_app_details(self):
@@ -18,8 +19,7 @@ class MarathonApp(object):
             print ('No task data on Marathon for App ! ', self.appid)
         else:
             self.instances_count = response['app']['instances']
-            self.labels = response['app']['labels']
-
+            self.labels = response['app'].get('labels', {})
             try:
                 self.image = response['app']['container']['docker']['image']
             except Exception as e:

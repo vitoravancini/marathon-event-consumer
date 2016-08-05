@@ -11,7 +11,6 @@ from sseclient import SSEClient
 autoscale_label = "autoscale"
 # input("Enter the DNS hostname or IP of your Marathon Instance : ")
 marathon_host = '172.23.70.106'
-MARATHON_POST_EVENT = 'api_post_event'
 
 
 class EventProcessor(object):
@@ -20,21 +19,20 @@ class EventProcessor(object):
     def __init__(self):
         self.marathon = Marathon(marathon_host)
         self.monitored_labels = ['logentries']
-        self.last_fetched_apps = self.get_monitored_apps()
-        self.plugins = []
-        # Reload on first run
 
-    def plugin_decorator(self, plugin):
-        self.plugins.append(plugin())
+        # map from marathon event to array of plugins
+        self.plugins_dict = {}
+
+    def register_plugin(self, plugin):
+        print ("register")
+        plugin_instance = plugin()
+
+        plugin_event = plugin_instance.get_event_to_attach()
+        self.plugins_dict.setdefault(plugin_event, []).append(plugin_instance)
         return plugin
 
     def attach_to_marathon(self):
-        print "Plugins loaded: {}".format(self.plugins)
-        # Initilalize plugins
-        for plugin in self.plugins:
-            plugin_init = getattr(plugin, "init", None)
-            if callable(plugin_init):
-                plugin_init(self.last_fetched_apps)
+        print "Plugins loaded: {}".format(self.plugins_dict)
 
         messages = SSEClient("http://" + marathon_host + ":8080/v2/events")
         for msg in messages:
@@ -43,29 +41,29 @@ class EventProcessor(object):
             except Exception as e:
                 print ("not json message: " + msg.data)
 
-            if 'eventType' in msg_json and msg_json['eventType'] == MARATHON_POST_EVENT:
+            if 'eventType' in msg_json:
                 self.handle_message(msg_json)
 
     def handle_message(self, msg):
+        print('\n\nEVENT: ' + msg['eventType'])
         # fetch all marathon apps with specified labels
         new_feteched_apps = self.get_monitored_apps()
-        self.print_marathon_apps(new_feteched_apps)
-
-        for plugin in self.plugins:
+        event_plugins = self.plugins_dict.get(msg['eventType'], [])
+        print event_plugins
+        for plugin in event_plugins:
             try:
-                monitored_apps_changed = plugin.apps_changed(self.last_fetched_apps, new_feteched_apps)
+                monitored_apps_changed = plugin.apps_changed(new_feteched_apps)
             except Exception as e:
                 print "Plugin exception on apps comparison: {}".format(e)
                 continue
 
+            print monitored_apps_changed
             if monitored_apps_changed:
-                print "Apps Changed due to: {}".format(plugin)
+                print "Apps Changed for: {}".format(plugin)
                 try:
                     plugin.action(new_feteched_apps)
                 except Exception as e:
                     print "Plugin exception on action: {}".format(e)
-
-        self.last_fetched_apps = new_feteched_apps
 
     def print_marathon_apps(self, apps):
         print ("  Found Marathon apps: ")
@@ -73,10 +71,7 @@ class EventProcessor(object):
             print(app.appid)
 
     def get_monitored_apps(self):
-        monitored_apps = []
-        for label in self.monitored_labels:
-            monitored_apps = monitored_apps + self.marathon.get_all_apps_with_label(label)
-        return monitored_apps
+        return self.marathon.get_all_apps()
 
 eventProcessor = EventProcessor()
-plugin_decorator = eventProcessor.plugin_decorator
+register_plugin = eventProcessor.register_plugin

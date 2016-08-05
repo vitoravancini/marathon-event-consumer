@@ -1,4 +1,4 @@
-from marathon_rsyslog_forward import eventProcessor
+from marathon_event_consumer import eventProcessor
 from pluginsDir import *
 
 if __name__ == "__main__":
