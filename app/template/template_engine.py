@@ -1,6 +1,7 @@
 from jinja2 import Environment, PackageLoader
 import os
 
+
 class TemplateEngine(object):
     """Render templates configured in templates folder"""
     def __init__(self):
@@ -8,8 +9,8 @@ class TemplateEngine(object):
         self.template = env.get_template('rsyslog.conf')
 
     def reload_rsyslog_template(self, apps):
-        for app in apps:
-            f = open('/etc/rsyslog.d/409-logentries-{}.conf'.format(app.appid), 'w+')
-            f.write(self.template.render(app=app))
-            f.close()
-            os.system("sudo service rsyslog restart")
+        f = open('/etc/rsyslog.d/49-logentries-apps.conf', 'w+')
+        f.write(self.template.render(apps=apps))
+        f.close()
+
+        os.system("sudo service rsyslog restart")
