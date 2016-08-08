@@ -9,17 +9,12 @@ from sseclient import SSEClient
 
 # shouldbe configurable
 autoscale_label = "autoscale"
-# input("Enter the DNS hostname or IP of your Marathon Instance : ")
-marathon_host = '172.23.70.106'
 
 
 class EventProcessor(object):
     """Class for processing marathon events for EventProcessor"""
 
     def __init__(self):
-        self.marathon = Marathon(marathon_host)
-        self.monitored_labels = ['logentries']
-
         # map from marathon event to array of plugins
         self.plugins_dict = {}
 
@@ -31,8 +26,9 @@ class EventProcessor(object):
         self.plugins_dict.setdefault(plugin_event, []).append(plugin_instance)
         return plugin
 
-    def attach_to_marathon(self):
+    def attach_to_marathon(self, marathon_host):
         print "Plugins loaded: {}".format(self.plugins_dict)
+        self.marathon = Marathon(marathon_host)
 
         messages = SSEClient("http://" + marathon_host + ":8080/v2/events")
         for msg in messages:
