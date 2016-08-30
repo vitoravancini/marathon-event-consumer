@@ -1,5 +1,5 @@
 import os
 
-plugins = [f[0:-3] for f in os.listdir('./pluginsDir/') if f.endswith('py') and f != "__init__.py"]
-
-__all__ = plugins
+path = os.path.dirname(os.path.abspath(__file__))
+plugins=[f[0:-3] for f in os.listdir(path) if f.endswith('py') and f != "__init__.py"]
+__all__=plugins
