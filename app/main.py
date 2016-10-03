@@ -3,7 +3,6 @@ from pluginsDir import *
 import sys
 
 if __name__ == "__main__":
-    print ("This application tested with Python3 onlyxx")
     if (len(sys.argv)) >= 2:
         marathon_host = sys.argv[1]
         print marathon_host

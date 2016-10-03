@@ -31,6 +31,8 @@ class EventProcessor(object):
         self.marathon = Marathon(marathon_host)
 
         messages = SSEClient("http://" + marathon_host + ":8080/v2/events")
+        msg_json = {}
+
         for msg in messages:
             try:
                 msg_json = json.loads(msg.data)
