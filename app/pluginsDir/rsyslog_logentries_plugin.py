@@ -1,8 +1,9 @@
 from marathon_event_consumer import register_plugin
 from template.template_engine import TemplateEngine
+import os
 
 MARATHON_POST_EVENT = 'api_post_event'
-
+LOGS_ROOT_DIR = '/mnt/logs/docker/'
 
 @register_plugin
 class RsyslogLogentriesPlugin(object):
@@ -33,8 +34,16 @@ class RsyslogLogentriesPlugin(object):
         return set_apps_2 != set_apps_1
 
     def action(self, apps):
-        logentries_apps = [app for app in apps if 'logentries' in app.labels]
-        self.template_engine.reload_rsyslog_template(logentries_apps)
+        logentries_apps = [app for app in apps if 'logentries-test' in app.labels]
+        apps_with_logs = []
+        for app in logentries_apps:
+            app_logs_dir = os.path.join(LOGS_ROOT_DIR, app.image)
+
+            if os.path.isdir(app_logs_dir):
+                apps_with_logs.append(app)
+
+        if apps_with_logs:
+            self.template_engine.reload_rsyslog_template(apps_with_logs)
 
     def get_event_to_attach(self):
         return self.event_to_attach
