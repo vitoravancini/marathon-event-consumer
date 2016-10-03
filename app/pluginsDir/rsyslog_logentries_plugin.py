@@ -34,7 +34,7 @@ class RsyslogLogentriesPlugin(object):
         return set_apps_2 != set_apps_1
 
     def action(self, apps):
-        logentries_apps = [app for app in apps if 'logentries-test' in app.labels]
+        logentries_apps = [app for app in apps if 'logentries-token' in app.labels]
         apps_with_logs = []
         for app in logentries_apps:
             app_logs_dir = os.path.join(LOGS_ROOT_DIR, app.image)
