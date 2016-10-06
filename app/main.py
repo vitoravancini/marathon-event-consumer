@@ -6,7 +6,7 @@ import logging
 
 if __name__ == "__main__":
     if (len(sys.argv)) >= 2:
-        logging.basicConfig(filename='/var/log/marathon_event_consumer.log', level=logging.INFO)
+        logging.basicConfig(filename='/var/log/marathon-event-consumer.log', level=logging.INFO)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
 
         logging.info("App started")
