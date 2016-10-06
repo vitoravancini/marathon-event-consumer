@@ -2,6 +2,7 @@ import sys
 import requests
 import json
 import math
+import logging
 import time
 from marathon import Marathon
 from marathon_app import MarathonApp
@@ -19,7 +20,6 @@ class EventProcessor(object):
         self.plugins_dict = {}
 
     def register_plugin(self, plugin):
-        print ("register")
         plugin_instance = plugin()
 
         plugin_event = plugin_instance.get_event_to_attach()
@@ -27,7 +27,7 @@ class EventProcessor(object):
         return plugin
 
     def attach_to_marathon(self, marathon_host):
-        print "Plugins loaded: {}".format(self.plugins_dict)
+        logging.info("Plugins loaded: {}".format(self.plugins_dict))
         self.marathon = Marathon(marathon_host)
 
         messages = SSEClient("http://" + marathon_host + ":8080/v2/events")
@@ -37,36 +37,39 @@ class EventProcessor(object):
             try:
                 msg_json = json.loads(msg.data)
             except Exception as e:
-                print ("not json message: " + msg.data)
+                logging.info("not json message: " + msg.data)
 
             if 'eventType' in msg_json:
                 self.handle_message(msg_json)
 
     def handle_message(self, msg):
-        print('\n\nEVENT: ' + msg['eventType'])
+        logging.info('\n\nEVENT: ' + msg['eventType'])
         # fetch all marathon apps with specified labels
+
         new_feteched_apps = self.get_monitored_apps()
         event_plugins = self.plugins_dict.get(msg['eventType'], [])
-        print event_plugins
+        logging.info("Plugins triggered: ")
+        logging.info(event_plugins)
+
         for plugin in event_plugins:
             try:
                 monitored_apps_changed = plugin.apps_changed(new_feteched_apps)
             except Exception as e:
-                print "Plugin exception on apps comparison: {}".format(e)
+                logging.error("Plugin exception on apps comparison: {}".format(e))
                 continue
 
-            print monitored_apps_changed
             if monitored_apps_changed:
-                print "Apps Changed for: {}".format(plugin)
+                logging.info("Apps with changes: {}, plugin {} taking action."
+                             .format(monitored_apps_changed, plugin))
                 try:
                     plugin.action(new_feteched_apps)
                 except Exception as e:
-                    print "Plugin exception on action: {}".format(e)
+                    logging.error("Plugin exception on action: {}".format(e))
 
     def print_marathon_apps(self, apps):
-        print ("  Found Marathon apps: ")
+        logging.info("  Found Marathon apps: ")
         for app in apps:
-            print(app.appid)
+            logging.info(app.appid)
 
     def get_monitored_apps(self):
         return self.marathon.get_all_apps()

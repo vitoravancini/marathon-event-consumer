@@ -1,4 +1,5 @@
 import requests
+import logging
 # Class that represents an Marathon App
 
 
@@ -16,21 +17,21 @@ class MarathonApp(object):
     def get_app_details(self):
         response = requests.get(self.uri).json()
         if (response['app']['tasks'] == []):
-            print ('No task data on Marathon for App ! ', self.appid)
+            logging.info('No task data on Marathon for App ! ', self.appid)
         else:
             self.instances_count = response['app']['instances']
             self.labels = response['app'].get('labels', {})
             try:
                 self.image = response['app']['container']['docker']['image']
             except Exception as e:
-                print ('probably not docker, setting app image to "" ')
+                logging.info('probably not docker, setting app image to "" ')
                 self.image = ""
 
             app_task_dict = {}
             for i in response['app']['tasks']:
                 taskid = i['id']
                 hostid = i['host']
-                # print ('DEBUG - taskId=', taskid +' running on '+hostid)
+
                 app_task_dict[str(taskid)] = str(hostid)
             self.tasks = app_task_dict
             return app_task_dict

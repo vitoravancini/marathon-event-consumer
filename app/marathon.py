@@ -1,5 +1,5 @@
 # Class that represents the marathon api
-
+import logging
 import requests
 from marathon_app import MarathonApp
 
@@ -15,7 +15,7 @@ class Marathon(object):
         response = requests.get(self.uri + autoscale_endpoint).json()
 
         if response['apps'] == []:
-            print ("No Apps found on Marathon")
+            logging.info("No Apps found on Marathon")
         else:
             marathon_apps = []
 
@@ -30,7 +30,7 @@ class Marathon(object):
         response = requests.get(self.uri + endpoint).json()
 
         if response['apps'] == []:
-            print ("No Apps found on Marathon for label {}".format(label))
+            logging.info("No Apps found on Marathon for label {}".format(label))
             return []
         else:
             apps = []
