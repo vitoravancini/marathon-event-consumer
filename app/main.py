@@ -7,6 +7,7 @@ import logging
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(levelname)s  %(message)s')
     logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("requests").setLevel(logging.WARNING)
 
     if (len(sys.argv)) >= 2:
         logging.info("App started")
